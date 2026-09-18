@@ -1,0 +1,15 @@
+services:
+  shop:
+    build: .
+    image: selector-drift-shop:local
+    ports:
+      - "${PORT:-8811}:8811"
+    environment:
+      SHOP_API_KEY: "${SHOP_API_KEY:-}"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8811/api/selectors').read()"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s

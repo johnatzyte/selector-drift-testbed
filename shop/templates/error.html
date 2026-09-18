@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}{{ code }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">{{ code }}</p>
+  <h1>{{ message }}</h1>
+  <p class="lead">That page is not part of the shop.</p>
+  <a class="cta" href="/">Back to the shop</a>
+</section>
+{% endblock %}

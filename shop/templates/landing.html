@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_card.html" import card %}
+
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">Roasted in small batches</p>
+  <h1>Coffee, and everything<br>you need to make it.</h1>
+  <p class="lead">{{ total }} products across beans, machines, grinders and the small
+  things that quietly decide whether the cup is any good.</p>
+  <a class="cta" href="/coffee/beans/">Browse the beans</a>
+</section>
+
+{% for section in sections_nav %}
+<section class="section-block">
+  <div class="section-head">
+    <h2>{{ section.name }}</h2>
+    <a class="section-more" href="/{{ section.slug }}/">All {{ section.count }} &rarr;</a>
+  </div>
+  <p class="section-cats">
+    {% for c in section.categories %}
+    <a class="chip" href="/{{ section.slug }}/{{ c.slug }}/">{{ c.name }} <span class="chip-count">{{ c.count }}</span></a>
+    {% endfor %}
+  </p>
+  <div {{ cls('grid_class') }}>
+    {% for product in featured[section.slug] %}
+    {{ card(product) }}
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

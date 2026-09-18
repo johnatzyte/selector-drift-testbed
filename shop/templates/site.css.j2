@@ -1,0 +1,227 @@
+/* Rendered from the live selector config, same as the markup.
+ *
+ * Two rules keep this honest:
+ *   1. Layout is keyed on CLASSES, never tag names, so swapping h3 -> div -> span
+ *      changes nothing visually.
+ *   2. No ">" child combinators, so inserting a wrapper div is invisible.
+ */
+
+@font-face { font-family: Manrope; font-weight: 400 800; font-display: swap; src: url("/assets/fonts/manrope.woff2") format("woff2"); }
+@font-face { font-family: "Roboto Mono"; font-weight: 400 500; font-display: swap; src: url("/assets/fonts/roboto-mono.woff2") format("woff2"); }
+
+:root {
+  --teal: #15b8a6;
+  --teal-bright: #2cd4bf;
+  --teal-dark: #0f766e;
+  --ink: #172033;
+  --muted: #64748b;
+  --line: #dce4e8;
+  --mist: #f3f8f7;
+  --purple: #9b5de5;
+  --danger: #ef4444;
+  --radius: 15px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: Manrope, "Segoe UI", Arial, sans-serif;
+  background:
+    radial-gradient(circle at 8% 4%, rgba(44, 212, 191, .14), transparent 30rem),
+    radial-gradient(circle at 96% 0%, rgba(155, 93, 229, .10), transparent 26rem),
+    #fff;
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, h4, p { margin-top: 0; }
+
+.shell { width: min(1240px, 92vw); margin: 0 auto; }
+
+/* ---------- masthead ---------- */
+
+.masthead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, .88);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(14px);
+}
+.masthead-inner { display: flex; align-items: center; gap: 28px; height: 68px; }
+.brand { display: flex; align-items: center; gap: 9px; font-size: 20px; font-weight: 800; letter-spacing: -.6px; color: var(--teal-dark); }
+.brand-mark { font-size: 22px; }
+.brand-name { letter-spacing: -.6px; }
+.masthead-note { margin-left: auto; color: var(--muted); font-family: "Roboto Mono", monospace; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; }
+
+{{ css('subnav_class') }} { display: flex; gap: 20px; }
+.subnav-link { color: var(--muted); font-size: 14px; font-weight: 600; padding: 6px 0; border-bottom: 2px solid transparent; }
+.subnav-link:hover { color: var(--teal-dark); border-bottom-color: var(--teal); }
+
+/* ---------- hero and headings ---------- */
+
+.hero { padding: 72px 0 40px; }
+.eyebrow { margin: 0 0 12px; color: var(--teal-dark); font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+h1 { max-width: 20ch; margin-bottom: 18px; font-size: clamp(38px, 5.6vw, 68px); line-height: 1.02; letter-spacing: -2.4px; }
+.lead { max-width: 62ch; color: #536275; font-size: clamp(16px, 1.5vw, 19px); line-height: 1.6; }
+
+.cta {
+  display: inline-block;
+  margin-top: 22px;
+  padding: 13px 24px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--teal-dark), var(--teal));
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 10px 28px rgba(15, 118, 110, .22);
+}
+.cta:hover { filter: brightness(1.07); }
+
+.page-head { padding: 44px 0 26px; }
+.page-head h1 { font-size: clamp(32px, 4vw, 48px); margin-bottom: 10px; }
+
+.section-block { padding: 26px 0 40px; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+.section-head h2 { margin: 0; font-size: 24px; letter-spacing: -.8px; }
+.section-more { color: var(--teal-dark); font-size: 14px; font-weight: 700; }
+.section-cats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+.chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 13px; font-weight: 600; }
+.chip:hover { border-color: var(--teal); color: var(--teal-dark); }
+.chip-count { color: var(--muted); font-family: "Roboto Mono", monospace; font-size: 11px; }
+
+/* ---------- breadcrumb ---------- */
+
+{{ css('breadcrumb_class') }} { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 22px 0 0; font-size: 13px; color: var(--muted); }
+.crumb { font-weight: 600; }
+.crumb:hover { color: var(--teal-dark); }
+.crumb-current { color: var(--ink); }
+.crumb-sep { color: var(--line); }
+
+/* ---------- product grid and cards ---------- */
+
+{{ css('grid_class') }} {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+{{ css('card_class') }} {
+  display: block;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, .84);
+  box-shadow: 0 10px 35px rgba(15, 118, 110, .05);
+  overflow: hidden;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+{{ css('card_class') }}:hover { transform: translateY(-3px); border-color: var(--teal-bright); box-shadow: 0 16px 40px rgba(15, 118, 110, .13); }
+
+/* extra_wrapper inserts this; it must be layout-neutral. */
+.card-inner { display: block; }
+
+{{ css('link_class') }} { display: block; }
+.thumb { display: block; line-height: 0; background: var(--mist); }
+.product-image { display: block; width: 100%; height: 150px; }
+.card-body { display: block; padding: 15px 16px 17px; }
+.card-eyebrow { display: block; margin-bottom: 6px; color: var(--muted); font-family: "Roboto Mono", monospace; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+
+/* Pinned so the title renders identically as h2, h3, h4, div, span or p. */
+{{ css('title_class') }} {
+  display: block;
+  margin: 0 0 9px;
+  font-family: Manrope, "Segoe UI", Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -.3px;
+  color: var(--ink);
+}
+
+{{ css('price_class') }} {
+  display: inline-block;
+  margin-right: 10px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--teal-dark);
+  white-space: nowrap;
+}
+{% if sel('price_in_attribute') %}
+/* The price left the text node. It still has to be on screen. */
+{{ css('price_class') }}::after { content: attr(data-price); }
+{% endif %}
+.currency, .amount { font: inherit; color: inherit; }
+
+{{ css('rating_class') }} { display: inline-block; margin-right: 10px; font-family: "Roboto Mono", monospace; font-size: 13px; color: var(--muted); }
+{{ css('rating_class') }}::before { content: "\2605"; margin-right: 4px; color: #f6a609; }
+.reviews { color: var(--line); }
+
+{{ css('stock_class') }} { display: block; margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--teal-dark); }
+
+/* ---------- pagination ---------- */
+
+.pager { display: flex; align-items: center; gap: 18px; padding: 34px 0 60px; }
+.prev, {{ css('next_page_class') }} {
+  padding: 10px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--teal-dark);
+}
+.prev:hover, {{ css('next_page_class') }}:hover { border-color: var(--teal); background: var(--mist); }
+.pager-state { color: var(--muted); font-family: "Roboto Mono", monospace; font-size: 12px; }
+{{ css('next_page_class') }} { margin-left: auto; }
+
+/* ---------- product detail ---------- */
+
+.detail { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 42px; padding: 30px 0 18px; align-items: start; }
+.detail-media { border: 1px solid var(--line); border-radius: var(--radius); background: var(--mist); overflow: hidden; line-height: 0; }
+.detail-media .product-image { height: 380px; }
+.detail-body { padding-top: 4px; }
+.detail-body {{ css('title_class') }} { font-size: clamp(26px, 3vw, 36px); margin-bottom: 14px; letter-spacing: -1.2px; }
+.detail-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 20px; }
+.detail-meta {{ css('price_class') }} { font-size: 26px; font-weight: 500; }
+.detail-meta {{ css('stock_class') }} { display: inline-block; margin-top: 0; }
+
+#product-description, .product-description { max-width: 62ch; color: #536275; font-size: 16px; line-height: 1.65; }
+
+.buy { margin-top: 10px; padding: 13px 26px; border: 0; border-radius: 999px; background: linear-gradient(90deg, var(--teal-dark), var(--teal)); color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.buy:hover { filter: brightness(1.07); }
+.buy:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+.sku-line { margin: 20px 0 0; color: var(--muted); font-size: 12px; }
+.sku { font-family: "Roboto Mono", monospace; }
+
+/* ---------- specifications ---------- */
+
+.specs-block { padding: 26px 0 10px; }
+.specs-block h2 { font-size: 20px; letter-spacing: -.6px; margin-bottom: 14px; }
+.spec-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; margin: 0; max-width: 880px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+{{ css('spec_class') }} { display: flex; justify-content: space-between; gap: 18px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: rgba(255, 255, 255, .7); }
+{{ css('spec_label_class') }} { margin: 0; color: var(--muted); font-size: 13px; font-weight: 600; }
+{{ css('spec_value_class') }} { margin: 0; font-family: "Roboto Mono", monospace; font-size: 13px; text-align: right; }
+
+/* ---------- footer ---------- */
+
+.footer { margin-top: 50px; border-top: 1px solid var(--line); background: var(--mist); }
+.footer-inner { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; padding: 26px 0; color: var(--muted); font-size: 13px; }
+.footer-meta { font-family: "Roboto Mono", monospace; font-size: 11px; }
+
+/* ---------- narrow screens ---------- */
+
+@media (max-width: 860px) {
+  .detail { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .detail-media .product-image { height: 260px; }
+  .masthead-inner { gap: 16px; }
+  .masthead-note { display: none; }
+}

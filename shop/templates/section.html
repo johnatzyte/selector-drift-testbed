@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_card.html" import card %}
+
+{% block title %}{{ section.name }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav {{ cls('breadcrumb_class') }}>
+  <a class="crumb" href="/">Home</a>
+  <span class="crumb-sep">/</span>
+  <span class="crumb crumb-current">{{ section.name }}</span>
+</nav>
+
+<div class="page-head">
+  <h1>{{ section.name }}</h1>
+  <p class="lead">{{ section.count }} products in {{ section.categories|length }} categories.</p>
+</div>
+
+{% for category in section.categories %}
+<section class="section-block">
+  <div class="section-head">
+    <h2>{{ category.name }}</h2>
+    <a class="section-more" href="/{{ section.slug }}/{{ category.slug }}/">All {{ category.count }} &rarr;</a>
+  </div>
+  <div {{ cls('grid_class') }}>
+    {% for product in samples[category.slug] %}
+    {{ card(product) }}
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

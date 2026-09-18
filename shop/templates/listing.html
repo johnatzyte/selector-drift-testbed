@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_card.html" import card %}
+
+{% block title %}{{ category.name }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav {{ cls('breadcrumb_class') }}>
+  <a class="crumb" href="/">Home</a>
+  <span class="crumb-sep">/</span>
+  <a class="crumb" href="/{{ section.slug }}/">{{ section.name }}</a>
+  <span class="crumb-sep">/</span>
+  <span class="crumb crumb-current">{{ category.name }}</span>
+</nav>
+
+<div class="page-head">
+  <h1>{{ category.name }}</h1>
+  <p class="lead">{{ category.count }} products &mdash; page {{ page }} of {{ total_pages }}.</p>
+</div>
+
+<div {{ cls('grid_class') }}>
+  {% for product in products %}
+  {{ card(product) }}
+  {% endfor %}
+</div>
+
+<nav class="pager">
+  {% if page > 1 %}
+  <a class="prev" href="/{{ section.slug }}/{{ category.slug }}/?page={{ page - 1 }}">&larr; Previous</a>
+  {% endif %}
+  <span class="pager-state">Page {{ page }} of {{ total_pages }}</span>
+  {% if page < total_pages %}
+  <a {{ cls('next_page_class') }} href="/{{ section.slug }}/{{ category.slug }}/?page={{ page + 1 }}">Next &rarr;</a>
+  {% endif %}
+</nav>
+{% endblock %}

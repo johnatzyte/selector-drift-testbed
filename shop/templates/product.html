@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% from "_card.html" import card, price_block %}
+{% from "_specs.html" import spec_list %}
+
+{% block title %}{{ product.name }} &mdash; {{ site_name }}{% endblock %}
+
+{% block content %}
+<nav {{ cls('breadcrumb_class') }}>
+  <a class="crumb" href="/">Home</a>
+  <span class="crumb-sep">/</span>
+  <a class="crumb" href="/{{ section.slug }}/">{{ section.name }}</a>
+  <span class="crumb-sep">/</span>
+  <a class="crumb" href="/{{ section.slug }}/{{ category.slug }}/">{{ category.name }}</a>
+  <span class="crumb-sep">/</span>
+  <span class="crumb crumb-current">{{ product.name }}</span>
+</nav>
+
+<article class="detail" {{ sel('sku_attribute') }}="{{ product.sku }}">
+  <div class="detail-media">{{ svg_for(product, height=380) }}</div>
+
+  <div class="detail-body">
+    <span class="card-eyebrow">{{ product.brand }}</span>
+    <{{ tag('title_tag') }} {{ cls('title_class') }}>{{ product.name }}</{{ tag('title_tag') }}>
+
+    <div class="detail-meta">
+      {{ price_block(product) }}
+      <span {{ cls('rating_class') }}>{{ '%.1f'|format(product.rating) }} <span class="reviews">({{ product.reviews }} reviews)</span></span>
+      <span {{ cls('stock_class') }}>{% if product.stock %}{{ product.stock }} in stock{% else %}Out of stock{% endif %}</span>
+    </div>
+
+    {% if sel('id_to_class') %}
+    <p class="product-description">{{ product.description }}</p>
+    {% else %}
+    <p id="product-description">{{ product.description }}</p>
+    {% endif %}
+
+    <button class="buy" type="button" {% if not product.stock %}disabled{% endif %}>
+      {% if product.stock %}Add to basket{% else %}Notify me{% endif %}
+    </button>
+
+    <p class="sku-line">SKU <span class="sku">{{ product.sku }}</span></p>
+  </div>
+</article>
+
+<section class="specs-block">
+  <h2>Specification</h2>
+  {{ spec_list(product) }}
+</section>
+
+{% if related %}
+<section class="section-block">
+  <div class="section-head">
+    <h2>More {{ category.name }}</h2>
+    <a class="section-more" href="/{{ section.slug }}/{{ category.slug }}/">All {{ category.count }} &rarr;</a>
+  </div>
+  <div {{ cls('grid_class') }}>
+    {% for item in related %}
+    {{ card(item) }}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

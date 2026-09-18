@@ -1,0 +1,37 @@
+{% macro price_block(product) %}
+{% if sel('price_in_attribute') %}
+<span {{ cls('price_class') }} data-price="&pound;{{ '%.2f'|format(product.price) }}"></span>
+{% elif sel('price_split') %}
+<span {{ cls('price_class') }}><span class="currency">&pound;</span><span class="amount">{{ '%.2f'|format(product.price) }}</span></span>
+{% else %}
+<span {{ cls('price_class') }}>&pound;{{ '%.2f'|format(product.price) }}</span>
+{% endif %}
+{% endmacro %}
+
+{% macro field(name, product) %}
+{% if name == 'title' %}
+<{{ tag('title_tag') }} {{ cls('title_class') }}>{{ product.name }}</{{ tag('title_tag') }}>
+{% elif name == 'price' %}
+{{ price_block(product) }}
+{% elif name == 'rating' %}
+<span {{ cls('rating_class') }}>{{ '%.1f'|format(product.rating) }} <span class="reviews">({{ product.reviews }})</span></span>
+{% elif name == 'stock' %}
+<span {{ cls('stock_class') }}>{% if product.stock %}{{ product.stock }} in stock{% else %}Out of stock{% endif %}</span>
+{% endif %}
+{% endmacro %}
+
+{% macro card(product) %}
+<{{ tag('card_tag') }} {{ cls('card_class') }} {{ sel('sku_attribute') }}="{{ product.sku }}">
+  {% if sel('extra_wrapper') %}<div class="card-inner">{% endif %}
+  <a {{ cls('link_class') }} href="/product/{{ product.slug }}">
+    <div class="thumb">{{ svg_for(product) }}</div>
+    <div class="card-body">
+      <span class="card-eyebrow">{{ product.brand }}</span>
+      {% for name in sel('field_order').split(',') %}
+      {{ field(name, product) }}
+      {% endfor %}
+    </div>
+  </a>
+  {% if sel('extra_wrapper') %}</div>{% endif %}
+</{{ tag('card_tag') }}>
+{% endmacro %}

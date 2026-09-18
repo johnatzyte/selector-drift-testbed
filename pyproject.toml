@@ -1,0 +1,20 @@
+[project]
+name = "selector-drift-shop"
+version = "0.1.0"
+description = "A fake coffee retailer whose CSS selectors can be rewritten at runtime, for demonstrating how scrapers break on markup drift"
+requires-python = ">=3.13"
+dependencies = [
+    "Flask==3.1.3",
+    "gunicorn==26.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==8.4.1",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
