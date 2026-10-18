@@ -225,3 +225,37 @@ h1 { max-width: 20ch; margin-bottom: 18px; font-size: clamp(38px, 5.6vw, 68px); 
   .masthead-inner { gap: 16px; }
   .masthead-note { display: none; }
 }
+
+/* ---------- teaching labs and live browsing ---------- */
+.lab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 22px; }
+.lab-panel { padding: 26px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; }
+.lab-panel p { color: var(--muted); line-height: 1.65; }
+.live-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 18px; padding-bottom: 26px; }
+.live-filters label { display: grid; gap: 8px; font-weight: 600; }
+.live-filters input, .live-filters select { font: inherit; padding: 12px; border: 1px solid var(--line); border-radius: 8px; max-width: 85vw; background: #fff; color: var(--ink); }
+.live-filters .buy { margin-top: 0; }
+[hidden] { display: none !important; }
+@media (max-width: 680px) {
+  .masthead-inner { height: auto; min-height: 68px; flex-wrap: wrap; padding: 12px 0; }
+  {{ css('subnav_class') }} { flex-wrap: wrap; gap: 14px; }
+}
+
+/* ---------- selector admin ---------- */
+.admin-toolbar, .admin-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 20px; }
+.admin-toolbar span { margin-right: auto; font-family: "Roboto Mono", monospace; }
+.admin-toolbar button, .admin-presets button { cursor: pointer; font-family: inherit; }
+.admin-layout { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(0, 1.5fr); gap: 30px; align-items: start; }
+.admin-layout fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; margin: 0 0 20px; display: grid; gap: 14px; }
+.admin-layout legend { font-weight: 800; padding: 0 8px; }
+.admin-layout label { display: grid; gap: 6px; font-size: 13px; font-weight: 600; }
+.admin-layout input:not([type="checkbox"]), .admin-layout select { width: 100%; padding: 10px; font: inherit; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
+.admin-layout .admin-toggle { display: flex; align-items: center; gap: 10px; }
+.admin-layout input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--teal-dark); }
+.admin-layout pre { background: var(--mist); padding: 16px; border-radius: 10px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
+.admin-layout h2 { margin-top: 24px; font-size: 20px; }
+.admin-preview { position: sticky; top: 90px; }
+.admin-preview iframe { width: 100%; height: 680px; border: 1px solid var(--line); border-radius: var(--radius); background: white; }
+.admin-preview p { color: var(--muted); line-height: 1.6; }
+@media (max-width: 900px) { .admin-layout { grid-template-columns: minmax(0, 1fr); } .admin-preview { position: static; } }
+
+.admin-layout summary { cursor: pointer; font-weight: 700; padding: 16px 0; color: var(--teal-dark); }

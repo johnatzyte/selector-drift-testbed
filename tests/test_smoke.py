@@ -186,7 +186,8 @@ def test_id_to_class_moves_the_description(client, catalogue):
 def test_not_indexable(client):
     robots = client.get("/robots.txt")
     assert robots.status_code == 200
-    assert "Disallow: /" in robots.get_data(as_text=True)
+    assert "Allow: /\n" in robots.get_data(as_text=True)
+    assert "Disallow: /\n" not in robots.get_data(as_text=True)
     assert client.get(LISTING).headers["X-Robots-Tag"] == "noindex, nofollow"
 
 

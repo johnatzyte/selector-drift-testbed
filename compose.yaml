@@ -6,6 +6,8 @@ services:
       - "${PORT:-8811}:8811"
     environment:
       SHOP_API_KEY: "${SHOP_API_KEY:-}"
+      SHOP_SESSION_SECRET: "${SHOP_SESSION_SECRET:-}"
+      SHOP_SECURE_COOKIES: "${SHOP_SECURE_COOKIES:-0}"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8811/api/selectors').read()"]

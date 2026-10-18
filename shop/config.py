@@ -111,6 +111,7 @@ class SelectorStore:
         self._defaults = dict(defaults or DEFAULTS)
         self._config = dict(self._defaults)
         self._version = 0
+        self._history = {0: dict(self._config)}
         self._lock = threading.Lock()
 
     @property
@@ -120,6 +121,18 @@ class SelectorStore:
     def snapshot(self):
         with self._lock:
             return dict(self._config)
+
+    def capture(self, version=None):
+        """Return configuration and revision together under the same lock."""
+        with self._lock:
+            revision = self._version if version is None else version
+            return dict(self._history[revision]), revision
+
+    def _remember(self):
+        self._history[self._version] = dict(self._config)
+        # Keep recent CSS revisions without unbounded memory growth.
+        if len(self._history) > 256:
+            del self._history[min(self._history)]
 
     def defaults(self):
         return dict(self._defaults)
@@ -132,7 +145,7 @@ class SelectorStore:
             if current[key] != self._defaults[key]
         }
 
-    def patch(self, changes):
+    def patch(self, changes, *, replace=False):
         if not isinstance(changes, dict):
             raise ValidationError("body", "must be a JSON object of selector keys")
         unknown = [k for k in changes if k not in SPEC]
@@ -140,12 +153,16 @@ class SelectorStore:
             raise UnknownKeys(sorted(unknown))
         validated = {key: SPEC[key](key, value) for key, value in changes.items()}
         with self._lock:
+            if replace:
+                self._config = dict(self._defaults)
             self._config.update(validated)
             self._version += 1
+            self._remember()
         return self.snapshot()
 
     def reset(self):
         with self._lock:
             self._config = dict(self._defaults)
             self._version += 1
+            self._remember()
         return self.snapshot()

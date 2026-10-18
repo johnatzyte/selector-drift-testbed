@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Selector controls — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <p class="eyebrow">Recording controls</p>
+  <h1>Change the markup.</h1>
+  <p class="lead">Break your scraper while keeping the shop looking familiar. Changes apply to the original shop; the fixed labs and Live Shop stay unchanged.</p>
+</div>
+<p id="admin-status" role="status" aria-live="polite">Checking access…</p>
+<form id="admin-login" class="live-filters" hidden>
+  <label>Admin key <input type="password" name="key" autocomplete="off" required></label>
+  <button class="buy" type="submit">Unlock controls</button>
+</form>
+<section id="admin-controls" hidden>
+  <div class="admin-toolbar">
+    <span id="admin-revision"></span>
+    <button id="admin-reset" class="chip" type="button">Reset defaults</button>
+    <button id="admin-logout" class="chip" type="button">Lock controls</button>
+  </div>
+  <p>Choose a preset or edit individual settings. Presets replace previous changes. Settings reset when the server restarts.</p>
+  <div class="admin-presets" aria-label="Presets">
+    <button class="chip" type="button" data-preset="titles">Rename titles</button>
+    <button class="chip" type="button" data-preset="prices">Split price text</button>
+    <button class="chip" type="button" data-preset="pagination">Change next-page link</button>
+    <button class="chip" type="button" data-preset="structure">Change card structure</button>
+    <button class="chip" type="button" data-preset="combined">Combined changes</button>
+  </div>
+  <div class="admin-layout">
+    <div>
+      <h2>Applied changes</h2>
+      <pre id="admin-diff" tabindex="0"></pre>
+      <details><summary>Advanced: edit individual selectors</summary>
+      <form id="selector-editor">
+        <fieldset><legend>Class names</legend>
+          {% for name, value in fields.items() if name.endswith('_class') and value is string %}
+          <label>{{ name.replace('_', ' ')|capitalize }}<input name="{{ name }}" type="text" required pattern="[a-z][a-z0-9-]{0,39}" maxlength="40"></label>
+          {% endfor %}
+        </fieldset>
+        <fieldset><legend>Structure and values</legend>
+          {% for name, value in fields.items() if not (name.endswith('_class') and value is string) %}
+          {% if value is boolean %}
+          <label class="admin-toggle"><input name="{{ name }}" type="checkbox">{{ name.replace('_', ' ')|capitalize }}</label>
+          {% elif name in options %}
+          <label>{{ name.replace('_', ' ')|capitalize }}<select name="{{ name }}">{% for option in options[name] %}<option value="{{ option }}">{{ option }}</option>{% endfor %}</select></label>
+          {% else %}
+          <label>{{ name.replace('_', ' ')|capitalize }}<input name="{{ name }}" type="text" required></label>
+          {% endif %}
+          {% endfor %}
+          <p>Field order must contain title, price, rating, stock, each once.</p>
+        </fieldset>
+        <button class="buy" type="submit">Apply changes</button>
+      </form>
+      </details>
+    </div>
+    <aside class="admin-preview">
+      <div class="section-head"><h2>Shop preview</h2><a class="section-more" href="/coffee/beans/" target="_blank" rel="noopener">Open shop ↗</a></div>
+      <p>Refresh your scraper after applying changes. This preview reloads automatically.</p>
+      <iframe id="shop-preview" title="Original shop preview"></iframe>
+    </aside>
+  </div>
+</section>
+<noscript><p>JavaScript is required to use the selector controls.</p></noscript>
+<script src="/assets/admin.js" defer></script>
+{% endblock %}

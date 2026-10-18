@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Live shop — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <p class="eyebrow">Find your next favourite</p>
+  <h1>Live shop</h1>
+  <p class="lead">Browse coffee and equipment. Search or choose a category to narrow your selection.</p>
+</div>
+<form id="live-filters" class="live-filters">
+  <label>Search products <input name="q" type="search" placeholder="Coffee, grinder, kettle…" maxlength="200"></label>
+  <label>Category <select name="category"><option value="">All categories</option>{% for category in categories %}<option value="{{ category.slug }}">{{ category.name }}</option>{% endfor %}</select></label>
+  <button class="buy" type="submit">Find products</button>
+</form>
+<p id="live-status" role="status" aria-live="polite">Loading products…</p>
+<div id="live-products" class="product-grid" aria-busy="true"></div>
+<div class="pager"><button id="load-more" class="buy" type="button" hidden>Load more</button></div>
+<noscript><p>Enable JavaScript to browse this shop, or visit the <a href="/labs/classic/">classic HTML shop</a>.</p></noscript>
+<script src="/assets/live.js" type="module"></script>
+{% endblock %}

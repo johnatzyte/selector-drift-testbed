@@ -23,7 +23,7 @@
 {% macro card(product) %}
 <{{ tag('card_tag') }} {{ cls('card_class') }} {{ sel('sku_attribute') }}="{{ product.sku }}">
   {% if sel('extra_wrapper') %}<div class="card-inner">{% endif %}
-  <a {{ cls('link_class') }} href="/product/{{ product.slug }}">
+  <a {{ cls('link_class') }} href="{{ shop_url('/product/' ~ product.slug) }}">
     <div class="thumb">{{ svg_for(product) }}</div>
     <div class="card-body">
       <span class="card-eyebrow">{{ product.brand }}</span>

@@ -4,20 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ site_name }}{% endblock %}</title>
-  <link rel="stylesheet" href="/assets/site.css?v={{ selector_version() }}">
+  <link rel="stylesheet" href="{{ stylesheet_url() }}">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>&#9749;</text></svg>">
 </head>
 <body>
   <header class="masthead">
     <div class="shell masthead-inner">
-      <a class="brand" href="/">
+      <a class="brand" href="{{ shop_url('/') }}">
         <span class="brand-mark">&#9749;</span>
         <span class="brand-name">{{ site_name }}</span>
       </a>
       <nav {{ cls('subnav_class') }}>
         {% for s in sections_nav %}
-        <a class="subnav-link" href="/{{ s.slug }}/">{{ s.name }}</a>
+        <a class="subnav-link" href="{{ shop_url('/' ~ s.slug ~ '/') }}">{{ s.name }}</a>
         {% endfor %}
+        <a class="subnav-link" href="/live/">Live shop</a>
+        <a class="subnav-link" href="/embedded/">Embedded shop</a>
+        <a class="subnav-link" href="/labs/">Labs</a>
       </nav>
       <span class="masthead-note">Free delivery over &pound;30</span>
     </div>
@@ -30,7 +33,7 @@
   <footer class="footer">
     <div class="shell footer-inner">
       <span>{{ site_name }} &mdash; a fictional shop for testing scrapers.</span>
-      <span class="footer-meta">Nothing here is for sale.</span>
+      <span class="footer-meta">Nothing here is for sale. <a class="section-more" href="/admin/">Admin</a></span>
     </div>
   </footer>
 </body>

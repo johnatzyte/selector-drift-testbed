@@ -12,7 +12,8 @@ bind = f"0.0.0.0:{os.environ.get('PORT', '8811')}"
 # on stage.
 #
 # Concurrency comes from threads instead, which share the one config. The store
-# guards mutations with a lock, and each request renders from a single snapshot.
+# guards mutations with a lock, and each request renders from a request-local
+# snapshot. Fixed lab profiles do not use the mutable legacy store.
 # ---------------------------------------------------------------------------
 workers = 1
 worker_class = "gthread"

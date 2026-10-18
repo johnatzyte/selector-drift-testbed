@@ -1,14 +1,25 @@
+from datetime import timedelta
+import os
+import secrets
 from pathlib import Path
 
-from flask import Flask, Response, abort, jsonify, render_template, request, send_from_directory
+from flask import Flask, Response, abort, g, jsonify, render_template, request, send_from_directory, url_for
 from markupsafe import Markup
 
 from .auth import require_key, resolve_key
-from .catalogue import load_catalogue, paginate
-from .config import SelectorStore, UnknownKeys, ValidationError
+from .catalogue import load_catalogue, paginate, product_record
+from .config import DEFAULTS, SelectorStore, UnknownKeys, ValidationError
 from .images import svg_for
+from .admin import admin_blueprint
+from .embedded import embedded_blueprint
 
 SITE_NAME = "Scrape Roasters"
+PROFILES = {
+    "classic": dict(DEFAULTS),
+    "drift": {**DEFAULTS, "title_class": "item-name", "price_split": True,
+              "extra_wrapper": True, "next_page_class": "forward"},
+}
+
 FONTS = Path(__file__).resolve().parent / "assets" / "fonts"
 
 
@@ -20,7 +31,7 @@ def register_jinja_globals(app, store):
     """
 
     def sel(key):
-        return app.config["SELECTORS"][key]
+        return g.selectors[key]
 
     # Values are allowlisted to ^[a-z][a-z0-9-]{0,39}$ in config.py, so nothing that
     # reaches Markup here can carry a quote, angle bracket, brace or semicolon.
@@ -31,12 +42,26 @@ def register_jinja_globals(app, store):
         tag=lambda key: Markup(sel(key)),
         svg_for=svg_for,
         site_name=SITE_NAME,
-        selector_version=lambda: store.version,
+        selector_version=lambda: g.selector_version,
+        shop_url=shop_url,
+        stylesheet_url=lambda: (f"/labs/{g.profile}/assets/site.css?v=1" if g.profile
+                                else url_for("stylesheet", v=g.selector_version)),
     )
+
+
+def shop_url(path="/"):
+    """Keep shop navigation inside a fixed lab profile."""
+    if (request.endpoint or "").startswith("embedded."):
+        return f"/embedded{path}"
+    return f"/labs/{g.profile}{path}" if g.profile else path
 
 
 def create_app(catalogue=None, store=None, api_key=None):
     app = Flask(__name__)
+    app.secret_key = os.environ.get("SHOP_SESSION_SECRET") or secrets.token_urlsafe(32)
+    app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Strict",
+                      SESSION_COOKIE_SECURE=os.environ.get("SHOP_SECURE_COOKIES") == "1",
+                      PERMANENT_SESSION_LIFETIME=timedelta(hours=4))
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
     catalogue = catalogue or load_catalogue()
@@ -61,7 +86,21 @@ def create_app(catalogue=None, store=None, api_key=None):
     def _snapshot_selectors():
         # One snapshot per request, so a mutation mid-render cannot split a page
         # between two configs.
-        app.config["SELECTORS"] = store.snapshot()
+        g.selectors, g.selector_version, g.profile = dict(DEFAULTS), 0, None
+        profile = (request.view_args or {}).get("profile")
+        if profile and profile not in PROFILES:
+            abort(404)
+        g.profile = profile
+        if g.profile:
+            g.selectors, g.selector_version = dict(PROFILES[g.profile]), 1
+        elif request.endpoint in {"live", "labs", "live_script", "products_api"} or (request.endpoint or "").startswith(("admin.", "embedded.")):
+            g.selectors, g.selector_version, g.profile = dict(DEFAULTS), 1, "classic"
+        else:
+            try:
+                version = request.args.get("v", type=int) if request.endpoint == "stylesheet" else None
+                g.selectors, g.selector_version = store.capture(version)
+            except KeyError:
+                abort(404)
 
     @app.context_processor
     def _nav():
@@ -77,15 +116,17 @@ def create_app(catalogue=None, store=None, api_key=None):
 
     @app.get("/robots.txt")
     def robots():
-        return Response("User-agent: *\nDisallow: /\n", mimetype="text/plain")
+        return Response("User-agent: *\nAllow: /\nDisallow: /api/selectors\nDisallow: /admin/\nDisallow: /api/admin/\n", mimetype="text/plain")
 
     @app.get("/")
-    def landing():
+    @app.get("/labs/<profile>/")
+    def landing(profile=None):
         featured = {s["slug"]: catalogue.in_category(s["slug"], s["categories"][0]["slug"])[:4] for s in catalogue.sections}
         return render_template("landing.html", sections=catalogue.sections, featured=featured, total=len(catalogue.products))
 
     @app.get("/product/<slug>")
-    def product(slug):
+    @app.get("/labs/<profile>/product/<slug>")
+    def product(slug, profile=None):
         item = catalogue.by_slug.get(slug)
         if item is None:
             abort(404)
@@ -95,7 +136,8 @@ def create_app(catalogue=None, store=None, api_key=None):
         return render_template("product.html", product=item, section=section, category=category, related=related)
 
     @app.get("/<section_slug>/")
-    def section(section_slug):
+    @app.get("/labs/<profile>/<section_slug>/")
+    def section(section_slug, profile=None):
         found = catalogue.section(section_slug)
         if found is None:
             abort(404)
@@ -103,7 +145,8 @@ def create_app(catalogue=None, store=None, api_key=None):
         return render_template("section.html", section=found, samples=samples)
 
     @app.get("/<section_slug>/<category_slug>/")
-    def listing(section_slug, category_slug):
+    @app.get("/labs/<profile>/<section_slug>/<category_slug>/")
+    def listing(section_slug, category_slug, profile=None):
         found = catalogue.category(section_slug, category_slug)
         if found is None:
             abort(404)
@@ -122,8 +165,63 @@ def create_app(catalogue=None, store=None, api_key=None):
         )
 
     @app.get("/assets/site.css")
-    def stylesheet():
+    @app.get("/labs/<profile>/assets/site.css")
+    def stylesheet(profile=None):
         return Response(render_template("site.css.j2"), mimetype="text/css")
+
+    @app.get("/labs/")
+    def labs():
+        return render_template("labs.html")
+
+    @app.get("/live/")
+    def live():
+        return render_template("live.html", categories=[
+            {"slug": c["slug"], "name": c["name"]}
+            for section in catalogue.sections for c in section["categories"]
+        ])
+
+    @app.get("/assets/product-cards.js")
+    def product_cards_script():
+        return send_from_directory(Path(__file__).parent / "assets", "product-cards.js")
+
+    @app.get("/assets/live.js")
+    def live_script():
+        return send_from_directory(Path(__file__).parent / "assets", "live.js")
+
+    @app.get("/assets/products/<slug>.svg")
+    def product_image(slug):
+        item = catalogue.by_slug.get(slug)
+        if item is None:
+            abort(404)
+        return Response(str(svg_for(item)).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ', 1),
+                        mimetype="image/svg+xml")
+
+    @app.get("/api/products")
+    def products_api():
+        try:
+            page = int(request.args.get("page", "1"))
+            size = int(request.args.get("page_size", "25"))
+            if page < 1 or not 1 <= size <= 100:
+                raise ValueError
+        except ValueError:
+            return jsonify(error="invalid_pagination", reason="page must be positive; page_size must be 1–100"), 400
+        category = request.args.get("category", "")
+        if category and not any(category == c["slug"] for section in catalogue.sections for c in section["categories"]):
+            return jsonify(error="unknown_category"), 400
+        query = request.args.get("q", "").strip().casefold()
+        items = [p for p in catalogue.products
+                 if (not category or p["category"] == category)
+                 and (not query or query in p["name"].casefold())]
+        total = len(items)
+        start = (page - 1) * size
+        products = [product_record(p) for p in items[start:start + size]]
+        next_url = (url_for("products_api", page=page + 1, page_size=size,
+                            category=category, q=request.args.get("q", ""))
+                    if start + size < total else None)
+        response = jsonify(products=products, page=page, page_size=size,
+                           total=total, next=next_url)
+        response.headers["Cache-Control"] = "no-store"
+        return response
 
     @app.get("/assets/fonts/<path:filename>")
     def font(filename):
@@ -145,12 +243,19 @@ def create_app(catalogue=None, store=None, api_key=None):
         store.reset()
         return _state(store)
 
+    app.register_blueprint(admin_blueprint)
+    app.register_blueprint(embedded_blueprint)
     _register_errors(app)
     return app
 
 
 def _state(store):
-    return jsonify(version=store.version, config=store.snapshot(), defaults=store.defaults(), changed=store.diff())
+    config, version = store.capture()
+    defaults = store.defaults()
+    return jsonify(version=version, config=config, defaults=defaults, changed={
+        key: {"from": defaults[key], "to": value}
+        for key, value in config.items() if value != defaults[key]
+    })
 
 
 def _register_errors(app):

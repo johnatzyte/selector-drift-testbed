@@ -12,7 +12,7 @@ import os
 import secrets
 from functools import wraps
 
-from flask import jsonify, request
+from flask import jsonify, request, session
 
 HEADER = "X-API-Key"
 ENV_VAR = "SHOP_API_KEY"
@@ -33,7 +33,14 @@ def require_key(view):
 
         expected = current_app.extensions["api_key"]
         presented = request.headers.get(HEADER, "")
-        if not secrets.compare_digest(presented, expected):
+        key_ok = bool(presented) and secrets.compare_digest(presented, expected)
+        session_ok = session.get("admin") is True and (
+            request.method in {"GET", "HEAD", "OPTIONS"} or (
+                bool(request.headers.get("X-CSRF-Token"))
+                and secrets.compare_digest(request.headers["X-CSRF-Token"], session.get("csrf", ""))
+            )
+        )
+        if not (key_ok or session_ok):
             return jsonify(
                 error="unauthorized",
                 reason=f"set the {HEADER} header to the value of {ENV_VAR}",

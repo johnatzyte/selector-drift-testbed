@@ -5,7 +5,7 @@
 
 {% block content %}
 <nav {{ cls('breadcrumb_class') }}>
-  <a class="crumb" href="/">Home</a>
+  <a class="crumb" href="{{ shop_url('/') }}">Home</a>
   <span class="crumb-sep">/</span>
   <span class="crumb crumb-current">{{ section.name }}</span>
 </nav>
@@ -19,7 +19,7 @@
 <section class="section-block">
   <div class="section-head">
     <h2>{{ category.name }}</h2>
-    <a class="section-more" href="/{{ section.slug }}/{{ category.slug }}/">All {{ category.count }} &rarr;</a>
+    <a class="section-more" href="{{ shop_url('/' ~ section.slug ~ '/' ~ category.slug ~ '/') }}">All {{ category.count }} &rarr;</a>
   </div>
   <div {{ cls('grid_class') }}>
     {% for product in samples[category.slug] %}

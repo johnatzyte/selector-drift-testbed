@@ -20,6 +20,13 @@ trap cleanup EXIT
 curl -fsS "${BASE}/" >/dev/null
 curl -fsS "${BASE}/coffee/beans/" >/dev/null
 curl -fsS "${BASE}/assets/site.css" >/dev/null
+curl -fsS "${BASE}/labs/" >/dev/null
+curl -fsS "${BASE}/live/" >/dev/null
+curl -fsS "${BASE}/assets/live.js" >/dev/null
+curl -fsS "${BASE}/assets/product-cards.js" >/dev/null
+curl -fsS "${BASE}/embedded/" >/dev/null
+curl -fsS "${BASE}/assets/embedded.js" >/dev/null
+curl -fsS "${BASE}/api/products?category=beans&page_size=2" | uv run --locked python -c 'import json,sys; data=json.load(sys.stdin); assert data["total"] == 300 and len(data["products"]) == 2 and data["next"]'
 
 # An unsigned mutation must be refused before anything else is trusted.
 test "$(curl -s -o /dev/null -w '%{http_code}' -X PATCH "${BASE}/api/selectors" \
@@ -34,6 +41,8 @@ curl -fsS -X PATCH "${BASE}/api/selectors" "${AUTH[@]}" \
 curl -fsS "${BASE}/coffee/beans/" | grep -q 'class="item-name"'
 curl -fsS "${BASE}/assets/site.css" | grep -q '\.item-name'
 ! curl -fsS "${BASE}/coffee/beans/" | grep -q 'class="product-title"'
+curl -fsS "${BASE}/labs/classic/coffee/beans/" | grep -q 'class="product-title"'
+curl -fsS "${BASE}/labs/drift/coffee/beans/" | grep -q 'class="currency"'
 
 curl -fsS -X POST "${BASE}/api/selectors/reset" "${AUTH[@]}" >/dev/null
 curl -fsS "${BASE}/coffee/beans/" | grep -q 'class="product-title"'

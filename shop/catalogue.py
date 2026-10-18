@@ -1,6 +1,7 @@
 """Reads the committed catalogue and indexes it for the routes."""
 
 import json
+from decimal import Decimal
 from pathlib import Path
 
 DATA = Path(__file__).resolve().parent / "data" / "catalogue.json"
@@ -59,3 +60,15 @@ def paginate(items, page, size=PAGE_SIZE):
 
 def load_catalogue(path=DATA):
     return Catalogue(json.loads(Path(path).read_text()))
+
+
+def product_record(product, *, prefix="/labs/classic/product/"):
+    """Shared JSON fields for browser-rendered shops; prices stay exact pennies."""
+    return {
+        "sku": product["sku"], "name": product["name"], "brand": product["brand"],
+        "price_minor": int(Decimal(str(product["price"])) * 100),
+        "currency": product["currency"], "stock": product["stock"],
+        "rating": product["rating"], "category": product["category"],
+        "image_url": f"/assets/products/{product['slug']}.svg",
+        "url": f"{prefix}{product['slug']}",
+    }
