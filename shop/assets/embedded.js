@@ -1,6 +1,6 @@
 "use strict";
 
-import {card, element} from "/assets/product-cards.js";
+import {card, element, price, sel, stock} from "/assets/product-cards.js";
 
 const content = document.querySelector("#embedded-content");
 const status = document.querySelector("#embedded-status");
@@ -21,13 +21,11 @@ function detail(product, category) {
   media.append(image);
   const body = element("div", "detail-body");
   body.append(element("span", "card-eyebrow", product.brand));
-  body.append(element("h2", "product-title", product.name));
+  body.append(element("h2", sel.title_class, product.name));
   const meta = element("div", "detail-meta");
-  const price = new Intl.NumberFormat("en-GB", {style: "currency", currency: product.currency})
-    .format(product.price_minor / 100);
-  meta.append(element("span", "price", price));
-  meta.append(element("span", "rating", `${product.rating.toFixed(1)} (${product.reviews} reviews)`));
-  meta.append(element("span", "stock", product.stock ? `${product.stock} in stock` : "Out of stock"));
+  meta.append(price(product));
+  meta.append(element("span", sel.rating_class, `${product.rating.toFixed(1)} (${product.reviews} reviews)`));
+  meta.append(stock(product));
   body.append(meta);
   body.append(element("p", "product-description", product.description));
   body.append(element("p", "sku-line", `SKU ${product.sku}`));
@@ -37,8 +35,8 @@ function detail(product, category) {
   specs.append(element("h2", "", "Specification"));
   const list = element("dl", "spec-list");
   for (const [name, value] of Object.entries(product.specs)) {
-    const row = element("div", "spec");
-    row.append(element("dt", "spec-label", name), element("dd", "spec-value", value));
+    const row = element("div", sel.spec_class);
+    row.append(element("dt", sel.spec_label_class, name), element("dd", sel.spec_value_class, value));
     list.append(row);
   }
   specs.append(list);
@@ -48,7 +46,7 @@ function detail(product, category) {
 try {
   const props = JSON.parse(document.querySelector("#__SHOP_DATA__").textContent).props.pageProps;
   if (props.kind === "listing") {
-    const grid = element("div", "product-grid");
+    const grid = element("div", sel.grid_class);
     grid.append(...props.products.map(card));
     content.append(grid);
     const pagination = props.pagination;
@@ -56,7 +54,7 @@ try {
     const pager = document.querySelector("#embedded-pager");
     if (pagination.previous) pager.append(link("← Previous", pagination.previous, "prev"));
     pager.append(element("span", "pager-state", `Page ${pagination.page} of ${pagination.pages}`));
-    if (pagination.next) pager.append(link("Next →", pagination.next, "next"));
+    if (pagination.next) pager.append(link("Next →", pagination.next, sel.next_page_class));
   } else if (props.kind === "product") {
     document.title = `${props.product.name} — Scrape Roasters`;
     content.append(...detail(props.product, props.category));

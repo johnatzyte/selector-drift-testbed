@@ -111,11 +111,11 @@ def test_embedded_json_escapes_script_delimiters_without_corrupting_values():
     assert EmbeddedHTML(detail.text).props["product"]["description"] == product["description"]
 
 
-def test_embedded_shop_ignores_live_selector_changes(client):
+def test_embedded_shop_follows_live_selector_changes(client):
     client.patch("/api/selectors", json={"title_class": "renamed", "grid_class": "renamed-grid"},
                  headers={"X-API-Key": "test-key"})
     response = client.get("/embedded/")
-    assert "/labs/classic/assets/site.css" in response.text
-    assert "renamed" not in response.text
+    assert "/labs/classic/assets/site.css?v=1" in response.text
+    assert '"title_class": "renamed"' in response.text
     assert len(EmbeddedHTML(response.text).props["products"]) == 25
     assert 'href="/embedded/"' in client.get("/labs/").text

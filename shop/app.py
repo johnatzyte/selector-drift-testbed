@@ -14,9 +14,11 @@ from .admin import admin_blueprint
 from .embedded import embedded_blueprint
 
 SITE_NAME = "Scrape Roasters"
+# Overrides applied on top of the live selector config, so admin changes reach every
+# profile while drift still differs from classic.
 PROFILES = {
-    "classic": dict(DEFAULTS),
-    "drift": {**DEFAULTS, "title_class": "item-name", "price_split": True,
+    "classic": {},
+    "drift": {"title_class": "item-name", "price_split": True,
               "extra_wrapper": True, "next_page_class": "forward"},
 }
 
@@ -44,7 +46,7 @@ def register_jinja_globals(app, store):
         site_name=SITE_NAME,
         selector_version=lambda: g.selector_version,
         shop_url=shop_url,
-        stylesheet_url=lambda: (f"/labs/{g.profile}/assets/site.css?v=1" if g.profile
+        stylesheet_url=lambda: (f"/labs/{g.profile}/assets/site.css?v={g.selector_version}" if g.profile
                                 else url_for("stylesheet", v=g.selector_version)),
     )
 
@@ -91,16 +93,18 @@ def create_app(catalogue=None, store=None, api_key=None):
         if profile and profile not in PROFILES:
             abort(404)
         g.profile = profile
-        if g.profile:
-            g.selectors, g.selector_version = dict(PROFILES[g.profile]), 1
-        elif request.endpoint in {"live", "labs", "live_script", "products_api"} or (request.endpoint or "").startswith(("admin.", "embedded.")):
+        if (request.endpoint or "").startswith("admin."):
+            # The control page keeps fixed styles so renaming selectors cannot break it.
             g.selectors, g.selector_version, g.profile = dict(DEFAULTS), 1, "classic"
-        else:
-            try:
-                version = request.args.get("v", type=int) if request.endpoint == "stylesheet" else None
-                g.selectors, g.selector_version = store.capture(version)
-            except KeyError:
-                abort(404)
+            return
+        if request.endpoint in {"live", "labs", "live_script", "products_api"} or (request.endpoint or "").startswith("embedded."):
+            g.profile = "classic"
+        try:
+            version = request.args.get("v", type=int) if request.endpoint == "stylesheet" else None
+            g.selectors, g.selector_version = store.capture(version)
+        except KeyError:
+            abort(404)
+        g.selectors.update(PROFILES[g.profile] if g.profile else {})
 
     @app.context_processor
     def _nav():

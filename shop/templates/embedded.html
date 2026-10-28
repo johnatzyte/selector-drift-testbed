@@ -15,5 +15,6 @@
 <nav id="embedded-pager" class="pager" aria-label="Product pages"></nav>
 <noscript><p>Enable JavaScript to view products, or browse the <a href="/labs/classic/">classic shop</a>.</p></noscript>
 <script id="__SHOP_DATA__" type="application/json">{{ initial_state|tojson }}</script>
+<script id="__SELECTORS__" type="application/json">{{ g.selectors|tojson }}</script>
 <script src="/assets/embedded.js" type="module"></script>
 {% endblock %}

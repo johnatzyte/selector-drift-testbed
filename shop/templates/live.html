@@ -12,8 +12,9 @@
   <button class="buy" type="submit">Find products</button>
 </form>
 <p id="live-status" role="status" aria-live="polite">Loading products…</p>
-<div id="live-products" class="product-grid" aria-busy="true"></div>
+<div id="live-products" {{ cls('grid_class') }} aria-busy="true"></div>
 <div class="pager"><button id="load-more" class="buy" type="button" hidden>Load more</button></div>
 <noscript><p>Enable JavaScript to browse this shop, or visit the <a href="/labs/classic/">classic HTML shop</a>.</p></noscript>
+<script id="__SELECTORS__" type="application/json">{{ g.selectors|tojson }}</script>
 <script src="/assets/live.js" type="module"></script>
 {% endblock %}

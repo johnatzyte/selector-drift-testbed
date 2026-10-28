@@ -9,7 +9,7 @@ That is the whole point. The stylesheet renders from the same config dict as the
 markup, so a rename carries the styling with it. The audience sees an unchanged shop;
 the scraper sees a different document.
 
-The same store now includes fixed scraping labs and a JavaScript-powered Live Shop.
+The same store now includes scraping labs and a JavaScript-powered Live Shop.
 The original selector-change demo remains available at the original URLs.
 
 ## Scraping labs
@@ -23,10 +23,12 @@ After starting the app, open `/labs/` for the challenge directory:
 | `/live/` | JavaScript loads products through JSON; search, category filters, and load-more pagination |
 | `/embedded/` | JavaScript renders products from initial JSON embedded in each HTML response; no product-data fetch |
 
-The fixed profiles have their own navigation and stylesheets. Product, category, and
-pagination links stay within the selected profile. Updating `/api/selectors` still
-changes the original shop (`/`, `/coffee/beans/`, `/product/...`), but cannot change
-either fixed lab or Live Shop. Use `/labs/classic/` as the stable tutorial target.
+The lab profiles have their own navigation and stylesheets. Product, category, and
+pagination links stay within the selected profile. Updating `/api/selectors` changes
+every part of the shop: the original pages, both labs, Live Shop and Embedded Shop.
+The drift lab applies its own changes on top of the current config, so it always
+differs from classic. Live Shop and Embedded Shop read the config from a
+`<script id="__SELECTORS__">` tag and build their markup from it.
 
 The robots policy now permits practice crawls and excludes the selector-control API.
 The fictional catalogue still carries `X-Robots-Tag: noindex, nofollow`.
@@ -51,7 +53,7 @@ The committed catalogue and existing displayed prices have not been regenerated.
 
 ### Checks
 
-`uv run --locked pytest -q` checks the original demo plus fixed profiles, navigation,
+`uv run --locked pytest -q` checks the original demo plus lab profiles, navigation,
 concurrent rendering, CSS revisions, complete JSON pagination, filters, and API errors.
 `bash scripts/smoke.sh` also builds/starts the container and checks HTTP lab routes.
 
@@ -69,8 +71,8 @@ Screenshots are written to ignored `artifacts/`.
 ### Embedded-data exercise
 
 The Embedded Shop has a 40-page catalogue, section/category listings, and product
-details. Navigation stays under `/embedded/`, and it uses fixed default styling
-independent of admin selector changes.
+details. Navigation stays under `/embedded/`, and its rendered markup follows admin
+selector changes like the rest of the shop.
 
 Raw HTML has an empty product container and an initial-state script:
 
@@ -162,8 +164,7 @@ or Combined changes. Each preset replaces previous changes. The applied-change s
 shows what changed, and the embedded original-shop preview reloads automatically.
 
 For precise control, expand the advanced editor, change fields, and click Apply changes.
-Reset defaults restores the original markup. Controls affect the original shop, not
-fixed classic/drift labs or Live Shop. Settings remain in memory and reset on restart.
+Reset defaults restores the original markup. Controls affect every part of the shop. Settings remain in memory and reset on restart.
 
 The key is exchanged for a four-hour signed, HttpOnly browser session and is not kept
 in browser local storage. Mutations require a session CSRF token or the existing API

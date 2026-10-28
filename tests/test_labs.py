@@ -15,29 +15,31 @@ def app():
     return create_app(api_key="test-key")
 
 
-def test_profiles_and_live_shop_ignore_legacy_changes(app):
+def test_admin_changes_reach_profiles_and_live_shop(app):
     client = app.test_client()
-    client.patch("/api/selectors", json={"title_class": "legacy-title", "grid_class": "legacy-grid"},
+    client.patch("/api/selectors", json={"price_class": "legacy-price", "grid_class": "legacy-grid"},
                  headers={"X-API-Key": "test-key"})
     classic = client.get("/labs/classic/coffee/beans/").text
     drift = client.get("/labs/drift/coffee/beans/").text
-    assert 'class="legacy-title"' in client.get("/coffee/beans/").text
+    assert 'class="legacy-price"' in client.get("/coffee/beans/").text
     assert 'class="product-title"' in classic
     assert 'class="item-name"' in drift
     assert 'class="currency"' in drift
     assert 'class="forward"' in drift
     for profile, body in (("classic", classic), ("drift", drift)):
+        assert 'class="legacy-price"' in body
+        assert 'class="legacy-grid"' in body
         assert f'href="/labs/{profile}/product/' in body
         assert f'href="/labs/{profile}/coffee/beans/?page=2"' in body
         css_path = f"/labs/{profile}/assets/site.css?v=1"
         assert css_path in body
         css = client.get(css_path).text
-        assert ".legacy-title" not in css
+        assert ".legacy-price" in css
         assert (".item-name" in css) == (profile == "drift")
     live = client.get("/live/").text
     assert "/labs/classic/assets/site.css?v=1" in live
-    assert 'id="live-products" class="product-grid"' in live
-    assert "legacy-grid" not in live
+    assert 'id="live-products" class="legacy-grid"' in live
+    assert '"price_class": "legacy-price"' in live
 
 
 def test_profile_navigation_stays_inside_profile(app):

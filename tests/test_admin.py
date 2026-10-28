@@ -36,7 +36,7 @@ def test_anonymous_and_missing_csrf_cannot_change_state(client, path):
     assert client.get("/api/selectors").get_json()["config"] == DEFAULTS
 
 
-def test_presets_replace_changes_and_leave_labs_unchanged(client):
+def test_presets_replace_changes_and_reach_labs(client):
     headers = unlock(client)
     response = client.post("/api/admin/preset", json={"name": "combined"}, headers=headers)
     assert response.status_code == 200
@@ -46,7 +46,7 @@ def test_presets_replace_changes_and_leave_labs_unchanged(client):
     assert state["config"]["title_class"] == DEFAULTS["title_class"]
     assert set(state["changed"]) == {"next_page_class"}
     assert 'class="forward"' in client.get("/coffee/beans/").text
-    assert 'class="next"' in client.get("/labs/classic/coffee/beans/").text
+    assert 'class="forward"' in client.get("/labs/classic/coffee/beans/").text
     assert "/labs/classic/assets/site.css" in client.get("/admin/").text
     response = client.post("/api/selectors/reset", headers=headers)
     assert response.status_code == 200 and response.get_json()["changed"] == {}
